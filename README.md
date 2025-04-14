@@ -96,7 +96,7 @@ class MyTreeService
         private readonly RepositoryTreeDataFetcher $treeFetcher,
     ) {
     }
-    
+
     public function getTreeData(string $entityClass): array
     {
         $this->treeFetcher->setEntityClass($entityClass);
