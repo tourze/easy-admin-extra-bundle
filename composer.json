@@ -14,12 +14,12 @@
     "symfony/http-kernel": "^6.4",
     "symfony/framework-bundle": "^6.4",
     "symfony/serializer": "^6.4",
-    "symfony/yaml": "^6.4",
+    "symfony/yaml": "^6.4 || ^7.1",
     "psr/log": "^3|^2|^1",
     "phpdocumentor/reflection-docblock": "^5.4.0",
     "yiisoft/strings": "^2.1",
     "tourze/easy-admin-attribute": "0.0.*",
-    "tourze/enum-extra": "0.0.*"
+    "tourze/enum-extra": "^0.0.4"
   },
   "autoload": {
     "psr-4": {
