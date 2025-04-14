@@ -135,7 +135,7 @@ class FieldService
             Types::BOOLEAN => BooleanField::new($property->getName()),
             Types::DATE_MUTABLE, Types::DATE_IMMUTABLE => DateField::new($property->getName()),
             Types::DATETIME_MUTABLE, Types::DATETIME_IMMUTABLE => DateTimeField::new($property->getName()),
-            Types::JSON, Types::ARRAY => ArrayField::new($property->getName()),
+            Types::JSON => ArrayField::new($property->getName()),
             default => TextField::new($property->getName())
         };
     }
