@@ -13,6 +13,7 @@
     "symfony/cache-contracts": "^3",
     "symfony/dependency-injection": "^6.4",
     "symfony/http-kernel": "^6.4",
+    "symfony/http-foundation": "^6.4",
     "symfony/framework-bundle": "^6.4",
     "symfony/serializer": "^6.4",
     "symfony/yaml": "^6.4 || ^7.1",
