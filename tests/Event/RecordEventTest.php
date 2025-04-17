@@ -40,8 +40,8 @@ class RecordEventTest extends TestCase
         $this->assertSame($formData, $event->getForm());
 
         // 验证事件属性
-        $this->assertObjectHasProperty('id', $event->getModel());
-        $this->assertObjectHasProperty('name', $event->getModel());
+        $this->assertTrue(property_exists($event->getModel(), 'id'), 'Model should have property "id"');
+        $this->assertTrue(property_exists($event->getModel(), 'name'), 'Model should have property "name"');
         $this->assertEquals(1, $event->getModel()->id);
         $this->assertEquals('Test Model', $event->getModel()->name);
 
@@ -83,8 +83,8 @@ class RecordEventTest extends TestCase
         $this->assertSame($formData, $event->getForm());
 
         // 验证事件属性
-        $this->assertObjectHasProperty('id', $event->getModel());
-        $this->assertObjectHasProperty('name', $event->getModel());
+        $this->assertTrue(property_exists($event->getModel(), 'id'), 'Model should have property "id"');
+        $this->assertTrue(property_exists($event->getModel(), 'name'), 'Model should have property "name"');
         $this->assertEquals(2, $event->getModel()->id);
         $this->assertEquals('Updated Model', $event->getModel()->name);
 
