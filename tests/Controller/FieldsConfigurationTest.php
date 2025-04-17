@@ -132,10 +132,10 @@ class FieldsConfigurationTest extends TestCase
         $entityReflection = new \ReflectionClass(OrderedFieldEntity::class);
         $this->controller->method('getEntityReflection')
             ->willReturn($entityReflection);
-            
+
         // 配置filterService的行为
         $descriptionFilter = TextFilter::new('description');
-        
+
         $this->filterService->method('createFilterFomProperty')
             ->willReturnCallback(function ($property) use ($descriptionFilter) {
                 if ($property->getName() === 'description') {
@@ -143,20 +143,20 @@ class FieldsConfigurationTest extends TestCase
                 }
                 return null;
             });
-            
+
         // 创建Filters mock
         $filters = $this->createMock(Filters::class);
-        
+
         // 验证add方法被调用
         $filters->expects($this->once())
             ->method('add')
             ->with($descriptionFilter)
             ->willReturnSelf();
-            
+
         // 通过反射调用configureFilters方法
         $method = new \ReflectionMethod($this->controller, 'configureFilters');
         $result = $method->invoke($this->controller, $filters);
-        
+
         // 验证结果
         $this->assertSame($filters, $result);
         */
