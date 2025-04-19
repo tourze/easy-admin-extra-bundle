@@ -22,7 +22,7 @@
     "phpdocumentor/reflection-docblock": "^5.4.0",
     "yiisoft/strings": "^2.1",
     "tourze/easy-admin-attribute": "0.0.*",
-    "tourze/enum-extra": "^0.0.4",
+    "tourze/enum-extra": "^0.0.5",
     "tourze/symfony-ecol-bundle": "0.0.*"
   },
   "autoload": {
