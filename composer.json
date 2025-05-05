@@ -21,7 +21,7 @@
     "psr/log": "^3|^2|^1",
     "phpdocumentor/reflection-docblock": "^5.4.0",
     "yiisoft/strings": "^2.1",
-    "tourze/easy-admin-attribute": "0.0.*",
+    "tourze/easy-admin-attribute": "0.1.*",
     "tourze/enum-extra": "~0.0.5",
     "tourze/symfony-ecol-bundle": "0.0.*"
   },
