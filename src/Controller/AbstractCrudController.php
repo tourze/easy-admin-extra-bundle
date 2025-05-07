@@ -5,6 +5,7 @@ namespace Tourze\EasyAdminExtraBundle\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminAction;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -311,6 +312,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         return $response;
     }
 
+    #[AdminAction('{entityId}/copy', 'copy')]
     public function copyAction(AdminContext $context, EntityManagerInterface $entityManager): Response
     {
         $entityInstance = $context->getEntity()->getInstance();
