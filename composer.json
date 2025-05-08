@@ -23,7 +23,8 @@
     "yiisoft/strings": "^2.1",
     "tourze/easy-admin-attribute": "0.1.*",
     "tourze/enum-extra": "~0.0.5",
-    "tourze/symfony-ecol-bundle": "0.0.*"
+    "tourze/symfony-ecol-bundle": "0.0.*",
+    "psr/container": "^1.1|^2.0"
   },
   "autoload": {
     "psr-4": {
