@@ -22,7 +22,7 @@
     "symfony/serializer": "^6.4",
     "symfony/yaml": "^6.4 || ^7.1",
     "tourze/easy-admin-attribute": "0.1.*",
-    "tourze/enum-extra": "~0.0.5",
+    "tourze/enum-extra": "0.1.*",
     "tourze/symfony-ecol-bundle": "0.1.*",
     "yiisoft/strings": "^2.1"
   },
