@@ -5,9 +5,6 @@ namespace Tourze\EasyAdminExtraBundle\Tests\Controller;
 use PHPUnit\Framework\TestCase;
 use Tourze\EasyAdmin\Attribute\Action\BatchDeletable;
 use Tourze\EasyAdmin\Attribute\Action\Copyable;
-use Tourze\EasyAdmin\Attribute\Action\Creatable;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Action\Editable;
 
 /**
  * 测试AbstractCrudController.php的单元测试类
@@ -37,9 +34,6 @@ class AbstractCrudControllerTest extends TestCase
  * 测试用的示例实体类
  */
 #[Copyable]
-#[Creatable]
-#[Editable]
-#[Deletable]
 #[BatchDeletable]
 class TestEntity
 {

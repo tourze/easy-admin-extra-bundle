@@ -8,9 +8,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
 use Tourze\EasyAdminExtraBundle\Controller\AbstractCrudController;
 use Tourze\EasyAdminExtraBundle\Service\FieldService;
 use Tourze\EasyAdminExtraBundle\Service\FilterService;
@@ -21,15 +18,10 @@ use Tourze\EasyAdminExtraBundle\Service\TextHelper;
  */
 class OrderedFieldEntity
 {
-    #[ListColumn(order: 20)]
-    #[FormField(order: 30)]
     private string $name;
 
-    #[ListColumn(order: 10)]
-    #[FormField(order: 10)]
     private string $title;
 
-    #[Keyword]
     private string $description;
 }
 

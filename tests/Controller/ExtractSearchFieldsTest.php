@@ -3,7 +3,6 @@
 namespace Tourze\EasyAdminExtraBundle\Tests\Controller;
 
 use PHPUnit\Framework\TestCase;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
 use Tourze\EasyAdminExtraBundle\Controller\AbstractCrudController;
 
 /**
@@ -11,12 +10,10 @@ use Tourze\EasyAdminExtraBundle\Controller\AbstractCrudController;
  */
 class SearchFieldsTestEntity
 {
-    #[Keyword]
     private string $title;
 
     private string $description;
 
-    #[Keyword]
     private string $keywords;
 }
 
