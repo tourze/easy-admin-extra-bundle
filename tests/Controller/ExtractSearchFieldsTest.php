@@ -57,7 +57,6 @@ class ExtractSearchFieldsTest extends TestCase
         $result = $method->invoke($controller, $entityReflection);
 
         // 验证结果
-        $this->assertIsArray($result);
         $this->assertCount(2, $result);
         $this->assertContains('title', $result);
         $this->assertContains('keywords', $result);
