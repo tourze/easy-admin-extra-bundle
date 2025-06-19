@@ -3,7 +3,6 @@
 namespace Tourze\EasyAdminExtraBundle\Tests\Controller;
 
 use PHPUnit\Framework\TestCase;
-use Tourze\EasyAdmin\Attribute\Action\BatchDeletable;
 use Tourze\EasyAdmin\Attribute\Action\Copyable;
 
 /**
@@ -34,7 +33,6 @@ class AbstractCrudControllerTest extends TestCase
  * 测试用的示例实体类
  */
 #[Copyable]
-#[BatchDeletable]
 class TestEntity
 {
     private int $id;
