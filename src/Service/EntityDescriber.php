@@ -40,7 +40,7 @@ class EntityDescriber
             if (!empty($listColumn)) {
                 $listColumn = $listColumn[0]->newInstance();
                 /** @var ListColumn $listColumn */
-                if ($listColumn->title) {
+                if ($listColumn->title !== null) {
                     return $listColumn->title;
                 }
             }
@@ -49,7 +49,7 @@ class EntityDescriber
             if (!empty($formFiled)) {
                 $formFiled = $formFiled[0]->newInstance();
                 /** @var FormField $formFiled */
-                if ($formFiled->title) {
+                if ($formFiled->title !== null) {
                     return $formFiled->title;
                 }
             }
@@ -68,7 +68,7 @@ class EntityDescriber
         if (!empty($ormColumn)) {
             $ormColumn = $ormColumn[0]->newInstance();
             /** @var ORM\Column $ormColumn */
-            if ($ormColumn->name) {
+            if ($ormColumn->name !== null) {
                 return $this->inflector->toSnakeCase($ormColumn->name);
             }
         }

@@ -9,11 +9,15 @@ class FormFieldService
 {
     public function append(FieldInterface $field, FormField $formField): void
     {
-        if ($formField->title) {
-            $field->setLabel($formField->title);
+        if ($formField->title !== '') {
+            if (method_exists($field, 'setLabel')) {
+                $field->setLabel($formField->title);
+            }
         }
-        $field->setDisabled(!$formField->canEdit);
-        if ($formField->required) {
+        if (method_exists($field, 'setDisabled')) {
+            $field->setDisabled(!$formField->canEdit);
+        }
+        if ($formField->required && method_exists($field, 'setRequired')) {
             $field->setRequired(true);
         }
     }

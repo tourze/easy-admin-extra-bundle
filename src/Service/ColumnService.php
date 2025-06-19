@@ -15,10 +15,10 @@ class ColumnService
         $enumClass = null;
 
         $Column = $property->getAttributes(ORM\Column::class);
-        if ($Column) {
+        if (!empty($Column)) {
             /** @var ORM\Column $Column */
             $Column = $Column[0]->newInstance();
-            if ($Column->enumType) {
+            if ($Column->enumType !== null) {
                 $enumClass = $Column->enumType;
                 $isMatch = true;
             }

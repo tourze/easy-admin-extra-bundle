@@ -44,7 +44,7 @@ class FieldService
         $listColumn = $attr?->newInstance();
         /** @var ListColumn $listColumn */
 
-        if ($listColumn?->showExpression && !$this->engine->evaluate($listColumn->showExpression)) {
+        if ($listColumn !== null && $listColumn->showExpression !== null && $this->engine->evaluate($listColumn->showExpression) === false) {
             return null;
         }
         return $listColumn;
@@ -56,7 +56,7 @@ class FieldService
         $formField = $attr?->newInstance();
         /** @var FormField $formField */
 
-        if ($formField?->showExpression && !$this->engine->evaluate($formField->showExpression)) {
+        if ($formField !== null && $formField->showExpression !== null && $this->engine->evaluate($formField->showExpression) === false) {
             return null;
         }
         return $formField;
@@ -67,12 +67,12 @@ class FieldService
         ?\ReflectionAttribute $manyToOneAttr,
         ?\ReflectionAttribute $oneToManyAttr,
         ?\ReflectionAttribute $oneToOneAttr
-    ): ?FieldInterface {
+    ): FieldInterface {
         $propertyName = $property->getName();
         $field = AssociationField::new($propertyName);
 
         // 根据关系类型配置字段
-        if ($manyToOneAttr) {
+        if ($manyToOneAttr !== null) {
             $args = $manyToOneAttr->getArguments();
             $targetEntity = $args['targetEntity'] ?? null;
             if ($targetEntity) {
@@ -80,7 +80,7 @@ class FieldService
             }
             // ManyToOne 默认显示为下拉选择
             $field->renderAsNativeWidget();
-        } elseif ($oneToManyAttr) {
+        } elseif ($oneToManyAttr !== null) {
 //            $args = $oneToManyAttr->getArguments();
 //            $targetEntity = $args['targetEntity'] ?? null;
 //            if ($targetEntity) {
@@ -88,7 +88,7 @@ class FieldService
 //            }
 //            // OneToMany 默认显示为多选
 //            $field->allowMultipleChoices();
-        } elseif ($oneToOneAttr) {
+        } elseif ($oneToOneAttr !== null) {
             $args = $oneToOneAttr->getArguments();
             $targetEntity = $args['targetEntity'] ?? null;
             if ($targetEntity) {
@@ -108,13 +108,13 @@ class FieldService
     {
         // 获取 Doctrine ORM Column 注解
         $column = $property->getAttributes(ORM\Column::class)[0] ?? null;
-        if (!$column) {
+        if ($column === null) {
             return null;
         }
         $column = $column->newInstance();
         /** @var ORM\Column $column */
 
-        if ($column->enumType) {
+        if ($column->enumType !== null) {
             /** @var class-string<\BackedEnum> $enumType */
             $enumType = $column->enumType;
 
@@ -144,7 +144,7 @@ class FieldService
     {
         // 获取属性类型
         $type = $property->getType();
-        if (!$type) {
+        if ($type === null) {
             return null;
         }
 
@@ -152,7 +152,7 @@ class FieldService
         $formField = $this->getValidFormFieldAttribute($property);
 
         // 列表和表单都没，那就不返回
-        if (!$listColumn && !$formField) {
+        if ($listColumn === null && $formField === null) {
             return null;
         }
 
@@ -163,38 +163,44 @@ class FieldService
 
         $field = null;
 
-        if ($manyToOneAttr || $oneToManyAttr || $oneToOneAttr) {
+        if ($manyToOneAttr !== null || $oneToManyAttr !== null || $oneToOneAttr !== null) {
             $field = $this->createAssociationField($property, $manyToOneAttr, $oneToManyAttr, $oneToOneAttr);
         }
 
-        if (!$field) {
+        if ($field === null) {
             $field = $this->createPropertyField($property, $pageName);
 
-            if (!$field) {
+            if ($field === null) {
                 return null;
             }
 
             // 应用 ListColumn 配置
-            if ($listColumn) {
+            if ($listColumn !== null) {
                 $this->listColumnService->append($property, $field, $listColumn);
             }
 
             // 应用 FormField 配置
-            if ($formField) {
+            if ($formField !== null) {
                 $this->formFieldService->append($field, $formField);
             }
         }
 
         // 兜底的判断
         if (!$field->getAsDto()->getLabel()) {
-            $field->setLabel($this->entityDescriber->getPropertyLabel($property));
+            if (method_exists($field, 'setLabel')) {
+                $field->setLabel($this->entityDescriber->getPropertyLabel($property));
+            }
         }
 
-        if (!$listColumn) {
-            $field->hideOnIndex();
+        if ($listColumn === null) {
+            if (method_exists($field, 'hideOnIndex')) {
+                $field->hideOnIndex();
+            }
         }
-        if (!$formField) {
-            $field->hideOnForm();
+        if ($formField === null) {
+            if (method_exists($field, 'hideOnForm')) {
+                $field->hideOnForm();
+            }
         }
 
         return $field;
@@ -206,6 +212,7 @@ class FieldService
         $type = $property->getType();
 
         // 根据属性类型创建对应的 Field
+        $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : 'mixed';
         $field = match(true) {
             $propertyName === 'id' => IdField::new($propertyName)->setMaxLength(-1),
             !empty($property->getAttributes(PictureColumn::class)) => ImageField::new($propertyName)
@@ -223,22 +230,24 @@ class FieldService
                     }
                     $file->move($uploadDir, $fileName);
                 }),
-            $type->getName() === 'bool' || $type->getName() === 'boolean' => BooleanField::new($propertyName),
-            $type->getName() === 'int' || $type->getName() === 'integer' => IntegerField::new($propertyName),
-            $type->getName() === 'float' || $type->getName() === 'double' => NumberField::new($propertyName),
-            $type->getName() === 'array' => ArrayField::new($propertyName),
-            $type->getName() === \DateTimeInterface::class, $type->getName() === \DateTimeImmutable::class => DateTimeField::new($propertyName),
-            $type->getName() === \DateTime::class => DateTimeField::new($propertyName),
-            $type->getName() === \DateInterval::class => DateField::new($propertyName),
+            $typeName === 'bool' || $typeName === 'boolean' => BooleanField::new($propertyName),
+            $typeName === 'int' || $typeName === 'integer' => IntegerField::new($propertyName),
+            $typeName === 'float' || $typeName === 'double' => NumberField::new($propertyName),
+            $typeName === 'array' => ArrayField::new($propertyName),
+            $typeName === \DateTimeInterface::class, $typeName === \DateTimeImmutable::class => DateTimeField::new($propertyName),
+            $typeName === \DateTime::class => DateTimeField::new($propertyName),
+            $typeName === \DateInterval::class => DateField::new($propertyName),
             !empty($property->getAttributes(RichTextField::class)) => TextEditorField::new($propertyName),
             default => $this->determineFieldByDoctrineType($property, $pageName)
         };
 
-        if (!$field) {
+        if ($field === null) {
             return null;
         }
 
-        $field->setLabel($this->entityDescriber->getPropertyLabel($property));
+        if (method_exists($field, 'setLabel')) {
+            $field->setLabel($this->entityDescriber->getPropertyLabel($property));
+        }
         return $field;
     }
 }

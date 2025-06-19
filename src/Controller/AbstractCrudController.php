@@ -167,7 +167,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
 
         foreach ($properties as $property) {
             $field = $this->getFieldService()->createFieldFromProperty($property, $pageName);
-            if (!$field) {
+            if ($field === null) {
                 continue;
             }
 
@@ -228,7 +228,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
 
         foreach ($properties as $property) {
             $filter = $this->getFilterService()->createFilterFomProperty($property);
-            if ($filter) {
+            if ($filter !== null) {
                 $this->getLogger()->debug('创建CURD Filter', [
                     'property' => $property,
                     'filter' => $filter,
@@ -321,7 +321,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
 
         // 检查实体是否有 @Copyable 注解
         $copyableAttr = $reflection->getAttributes(Copyable::class)[0] ?? null;
-        if (!$copyableAttr) {
+        if ($copyableAttr === null) {
             $this->addFlash('danger', '该实体不支持复制功能');
             return $this->redirect($this->getAdminUrlGenerator()
                 ->setController(static::class)
@@ -335,7 +335,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         // 遍历所有属性，查找带有 @CopyColumn 注解的属性
         foreach ($reflection->getProperties() as $property) {
             $copyColumnAttr = $property->getAttributes(CopyColumn::class)[0] ?? null;
-            if (!$copyColumnAttr) {
+            if ($copyColumnAttr === null) {
                 continue;
             }
 

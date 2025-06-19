@@ -26,7 +26,7 @@ class FilterService
     public function createFilterFomProperty(ReflectionProperty $property): ?FilterInterface
     {
         $filterableAttr = $property->getAttributes(Filterable::class)[0] ?? null;
-        if (!$filterableAttr) {
+        if ($filterableAttr === null) {
             return null;
         }
 
@@ -40,32 +40,36 @@ class FilterService
         $oneToOneAttr = $property->getAttributes(ORM\OneToOne::class)[0] ?? null;
         $manyToManyAttr = $property->getAttributes(ORM\ManyToMany::class)[0] ?? null;
 
-        if ($manyToOneAttr || $oneToManyAttr || $oneToOneAttr || $manyToManyAttr) {
+        if ($manyToOneAttr !== null || $oneToManyAttr !== null || $oneToOneAttr !== null || $manyToManyAttr !== null) {
             $filter = EntityFilter::new($propertyName)->canSelectMultiple();
             $label = $this->entityDescriber->getPropertyLabel($property);
-            return $filter->setLabel($label);
+            $filter->setLabel($label);
+            return $filter;
         }
 
         // 获取属性类型
         $type = $property->getType();
-        if (!$type) {
+        if ($type === null) {
             return null;
         }
 
         // 根据属性类型和 Filterable 配置添加对应的过滤器
+        $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : 'mixed';
         $filter = match(true) {
-            $type->getName() === 'bool' || $type->getName() === 'boolean' => BooleanFilter::new($propertyName),
-            $type->getName() === 'int' || $type->getName() === 'integer' => NumericFilter::new($propertyName),
-            $type->getName() === 'float' || $type->getName() === 'double' => NumericFilter::new($propertyName),
-            $type->getName() === \DateTimeInterface::class => DateTimeFilter::new($propertyName),
-            $type->getName() === \DateTimeImmutable::class => DateTimeFilter::new($propertyName),
-            $type->getName() === \DateTime::class => DateTimeFilter::new($propertyName),
+            $typeName === 'bool' || $typeName === 'boolean' => BooleanFilter::new($propertyName),
+            $typeName === 'int' || $typeName === 'integer' => NumericFilter::new($propertyName),
+            $typeName === 'float' || $typeName === 'double' => NumericFilter::new($propertyName),
+            $typeName === \DateTimeInterface::class => DateTimeFilter::new($propertyName),
+            $typeName === \DateTimeImmutable::class => DateTimeFilter::new($propertyName),
+            $typeName === \DateTime::class => DateTimeFilter::new($propertyName),
             default => $this->determineFieldByDoctrineType($property)
         };
 
         // 设置标题
         $label = $this->entityDescriber->getPropertyLabel($property);
-        $filter->setLabel($label);
+        if (method_exists($filter, 'setLabel')) {
+            $filter->setLabel($label);
+        }
 
         return $filter;
     }
@@ -74,13 +78,13 @@ class FilterService
     {
         // 获取 Doctrine ORM Column 注解
         $column = $property->getAttributes(ORM\Column::class)[0] ?? null;
-        if (!$column) {
+        if ($column === null) {
             return null;
         }
         $column = $column->newInstance();
         /** @var ORM\Column $column */
 
-        if ($column->enumType) {
+        if ($column->enumType !== null) {
             /** @var class-string<BackedEnum> $enumType */
             $enumType = $column->enumType;
 
