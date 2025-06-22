@@ -3,7 +3,6 @@
 namespace Tourze\EasyAdminExtraBundle\Tests\Controller;
 
 use PHPUnit\Framework\TestCase;
-use Tourze\EasyAdmin\Attribute\Action\Copyable;
 
 /**
  * 测试AbstractCrudController.php的单元测试类
@@ -32,7 +31,6 @@ class AbstractCrudControllerTest extends TestCase
 /**
  * 测试用的示例实体类
  */
-#[Copyable]
 class TestEntity
 {
     private int $id;
