@@ -4,55 +4,7 @@ namespace Tourze\EasyAdminExtraBundle\Tests\Service;
 
 use PHPUnit\Framework\TestCase;
 use Tourze\EasyAdminExtraBundle\Service\ChoiceService;
-use Tourze\EnumExtra\Itemable;
-use Tourze\EnumExtra\ItemTrait;
-use Tourze\EnumExtra\Labelable;
-use Tourze\EnumExtra\Selectable;
-use Tourze\EnumExtra\SelectTrait;
 use Traversable;
-
-/**
- * 测试状态枚举
- */
-enum TestStatusEnum: string implements Itemable, Labelable, Selectable
-{
-    use ItemTrait;
-    use SelectTrait;
-
-    case ACTIVE = 'active';
-    case INACTIVE = 'inactive';
-
-    public function getLabel(): string
-    {
-        return match ($this) {
-            self::ACTIVE => 'ACTIVE',
-            self::INACTIVE => 'INACTIVE',
-        };
-    }
-}
-
-/**
- * 带有标签的测试状态枚举
- */
-enum TestStatusWithLabelEnum: string implements Itemable, Labelable, Selectable
-{
-    use ItemTrait;
-    use SelectTrait;
-
-    case ACTIVE = 'active';
-    case INACTIVE = 'inactive';
-
-    /**
-     * 获取标签
-     */
-    public function getLabel(): string
-    {
-        return match ($this) {
-            self::ACTIVE => '启用',
-            self::INACTIVE => '禁用',
-        };
-    }
-}
 
 class ChoiceServiceTest extends TestCase
 {

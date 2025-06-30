@@ -9,7 +9,7 @@ use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 class TextHelper
 {
     public function __construct(
-        private readonly DocBlockFactory $docBlockFactory,
+        private readonly object $docBlockFactory,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }

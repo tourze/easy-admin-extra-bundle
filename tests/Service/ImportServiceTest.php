@@ -8,6 +8,7 @@ use Tourze\EasyAdminExtraBundle\Service\ImportService;
 
 /**
  * 测试实体类
+ * @internal
  */
 class TestImportEntity
 {

@@ -13,6 +13,7 @@ use Yiisoft\Strings\Inflector;
 
 /**
  * 代理类，用于mock Column属性
+ * @internal
  */
 class ColumnProxy
 {
@@ -28,12 +29,20 @@ class ColumnProxy
 
     public function __get($name)
     {
-        return $this->$name;
+        return match ($name) {
+            'options' => $this->options,
+            'name' => $this->name,
+            'length' => $this->length,
+            'type' => $this->type,
+            'unique' => $this->unique,
+            default => null
+        };
     }
 }
 
 /**
  * 代理类，用于mock ListColumn属性
+ * @internal
  */
 class ListColumnProxy
 {
@@ -45,12 +54,16 @@ class ListColumnProxy
 
     public function __get($name)
     {
-        return $this->$name;
+        return match ($name) {
+            'title' => $this->title,
+            default => null
+        };
     }
 }
 
 /**
  * 代理类，用于mock FormField属性
+ * @internal
  */
 class FormFieldProxy
 {
@@ -62,12 +75,16 @@ class FormFieldProxy
 
     public function __get($name)
     {
-        return $this->$name;
+        return match ($name) {
+            'title' => $this->title,
+            default => null
+        };
     }
 }
 
 /**
  * 代理类，用于mock ManyToOne属性
+ * @internal
  */
 class ManyToOneProxy
 {

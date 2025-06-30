@@ -11,6 +11,9 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Tourze\EasyAdminExtraBundle\Service\RepositoryTreeDataFetcher;
 
+/**
+ * @internal
+ */
 class MockRepositoryTreeDataFetcher extends RepositoryTreeDataFetcher
 {
     public array $shouldBeEmpty = [];

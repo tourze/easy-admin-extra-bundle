@@ -8,6 +8,7 @@ use Tourze\EasyAdminExtraBundle\Event\RecordFormTrait;
 
 /**
  * 测试类，用于测试RecordFormTrait特征
+ * @internal
  */
 class TestEvent extends Event
 {

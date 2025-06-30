@@ -96,7 +96,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
 
         // 搜索的支持
         $searchFields = $this->extractSearchFields($reflection);
-        $crud->setSearchFields($searchFields ?: null)
+        $crud->setSearchFields($searchFields !== [] ? $searchFields : null)
             ->setSearchMode(SearchMode::ANY_TERMS);
 
         // 默认排序
@@ -312,7 +312,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         return $response;
     }
 
-    #[AdminAction('{entityId}/copy', 'copy')]
+    #[AdminAction(routePath: '{entityId}/copy', routeName: 'copy')]
     public function copyAction(AdminContext $context, EntityManagerInterface $entityManager): Response
     {
         $entityInstance = $context->getEntity()->getInstance();

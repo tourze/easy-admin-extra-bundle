@@ -17,6 +17,7 @@ use Tourze\EasyAdminExtraBundle\Service\TextHelper;
 
 /**
  * 带有字段排序注解的测试实体类
+ * @internal
  */
 class OrderedFieldEntity
 {
@@ -140,47 +141,4 @@ class FieldsConfigurationTest extends TestCase
         $this->assertSame($nameField, $fields[1]);
     }
 
-    /**
-     * 测试过滤器配置
-     */
-    public function testConfigureFilters(): void
-    {
-        $this->markTestSkipped('Skipping due to Filters class being final and cannot be mocked');
-
-        // 以下代码因为 Filters 是 final 类而无法执行
-        // 需要重新设计测试方法或者构建 Filters 的实际实例
-        /*
-        // 设置getEntityReflection方法返回OrderedFieldEntity的反射
-        $entityReflection = new \ReflectionClass(OrderedFieldEntity::class);
-        $this->controller->method('getEntityReflection')
-            ->willReturn($entityReflection);
-
-        // 配置filterService的行为
-        $descriptionFilter = TextFilter::new('description');
-
-        $this->filterService->method('createFilterFomProperty')
-            ->willReturnCallback(function ($property) use ($descriptionFilter) {
-                if ($property->getName() === 'description') {
-                    return $descriptionFilter;
-                }
-                return null;
-            });
-
-        // 创建Filters mock
-        $filters = $this->createMock(Filters::class);
-
-        // 验证add方法被调用
-        $filters->expects($this->once())
-            ->method('add')
-            ->with($descriptionFilter)
-            ->willReturnSelf();
-
-        // 通过反射调用configureFilters方法
-        $method = new \ReflectionMethod($this->controller, 'configureFilters');
-        $result = $method->invoke($this->controller, $filters);
-
-        // 验证结果
-        $this->assertSame($filters, $result);
-        */
-    }
 }

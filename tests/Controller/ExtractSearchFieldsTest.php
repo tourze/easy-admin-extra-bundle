@@ -8,6 +8,7 @@ use Tourze\EasyAdminExtraBundle\Controller\AbstractCrudController;
 
 /**
  * 带有Keyword注解的测试实体类
+ * @internal
  */
 class SearchFieldsTestEntity
 {
