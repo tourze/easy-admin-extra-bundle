@@ -2,15 +2,22 @@
 
 namespace Tourze\EasyAdminExtraBundle\Tests\Service;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tourze\EasyAdminExtraBundle\Service\ColumnService;
 
-class ColumnServiceTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(ColumnService::class)]
+final class ColumnServiceTest extends TestCase
 {
     private ColumnService $columnService;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->columnService = new ColumnService();
     }
 

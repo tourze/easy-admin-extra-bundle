@@ -8,6 +8,7 @@ class ColumnService
 {
     /**
      * 格式化枚举的字段
+     * @return array{title: string, className: string, isMatch: bool}
      */
     public function formatEnumColumn(\ReflectionProperty $property, string $title): array
     {
@@ -15,10 +16,10 @@ class ColumnService
         $enumClass = null;
 
         $Column = $property->getAttributes(ORM\Column::class);
-        if (!empty($Column)) {
-            /** @var ORM\Column $Column */
+        if ([] !== $Column) {
             $Column = $Column[0]->newInstance();
-            if ($Column->enumType !== null) {
+            assert($Column instanceof ORM\Column);
+            if (null !== $Column->enumType) {
                 $enumClass = $Column->enumType;
                 $isMatch = true;
             }

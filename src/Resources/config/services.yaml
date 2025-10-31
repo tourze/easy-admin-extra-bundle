@@ -9,4 +9,8 @@ services:
   Tourze\EasyAdminExtraBundle\Service\:
     resource: '../../Service/'
 
+  # phpDocumentor DocBlockFactory configuration
+  phpDocumentor\Reflection\DocBlockFactoryInterface:
+    factory: ['phpDocumentor\Reflection\DocBlockFactory', 'createInstance']
+
   Yiisoft\Strings\Inflector: ~

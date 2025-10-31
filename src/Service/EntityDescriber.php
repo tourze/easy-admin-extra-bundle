@@ -11,12 +11,11 @@ use Yiisoft\Strings\Inflector;
 /**
  * 读取实体信息
  */
-class EntityDescriber
+readonly class EntityDescriber
 {
     public function __construct(
-        private readonly Inflector $inflector,
-    )
-    {
+        private Inflector $inflector,
+    ) {
     }
 
     /**
@@ -24,38 +23,54 @@ class EntityDescriber
      */
     public function getPropertyLabel(\ReflectionProperty $property): string
     {
-        $name = $property->getName();
+        $name = $this->getOrmCommentLabel($property);
 
-        // 如果是ORM字段，尝试读取注释
-        $attributes = $property->getAttributes(ORM\Column::class);
-        if (!empty($attributes)) {
-            $attribute = $attributes[0]->newInstance();
-            /** @var ORM\Column $attribute */
-            $name = $attribute->options['comment'] ?? $property->getName();
-        }
-
-        // 如果跟属性名一样，说明没变化
         if ($name === $property->getName()) {
-            $listColumn = $property->getAttributes(ListColumn::class);
-            if (!empty($listColumn)) {
-                $listColumn = $listColumn[0]->newInstance();
-                /** @var ListColumn $listColumn */
-                if ($listColumn->title !== null) {
-                    return $listColumn->title;
-                }
-            }
-
-            $formFiled = $property->getAttributes(FormField::class);
-            if (!empty($formFiled)) {
-                $formFiled = $formFiled[0]->newInstance();
-                /** @var FormField $formFiled */
-                if ($formFiled->title !== null) {
-                    return $formFiled->title;
-                }
-            }
+            $name = $this->getAttributeLabel($property) ?? $name;
         }
 
         return $name;
+    }
+
+    private function getOrmCommentLabel(\ReflectionProperty $property): string
+    {
+        $ormColumn = $property->getAttributes(ORM\Column::class)[0] ?? null;
+        if (null === $ormColumn) {
+            return $property->getName();
+        }
+
+        $attribute = $ormColumn->newInstance();
+
+        return $attribute->options['comment'] ?? $property->getName();
+    }
+
+    private function getAttributeLabel(\ReflectionProperty $property): ?string
+    {
+        return $this->getListColumnTitle($property) ?? $this->getFormFieldTitle($property);
+    }
+
+    private function getListColumnTitle(\ReflectionProperty $property): ?string
+    {
+        $listColumn = $property->getAttributes(ListColumn::class)[0] ?? null;
+        if (null === $listColumn) {
+            return null;
+        }
+
+        $instance = $listColumn->newInstance();
+
+        return $instance->title;
+    }
+
+    private function getFormFieldTitle(\ReflectionProperty $property): ?string
+    {
+        $formField = $property->getAttributes(FormField::class)[0] ?? null;
+        if (null === $formField) {
+            return null;
+        }
+
+        $instance = $formField->newInstance();
+
+        return $instance->title;
     }
 
     /**
@@ -65,17 +80,17 @@ class EntityDescriber
     {
         // 从 ORM\Column 只读取 name
         $ormColumn = $property->getAttributes(ORM\Column::class);
-        if (!empty($ormColumn)) {
+        if ([] !== $ormColumn) {
             $ormColumn = $ormColumn[0]->newInstance();
             /** @var ORM\Column $ormColumn */
-            if ($ormColumn->name !== null) {
+            if (null !== $ormColumn->name) {
                 return $this->inflector->toSnakeCase($ormColumn->name);
             }
         }
 
         if ($withIdSuffix) {
             // 如果是关系字段，则加上id后缀
-            if (!empty($property->getAttributes(ORM\ManyToOne::class)) || !empty($property->getAttributes(ORM\OneToOne::class))) {
+            if ([] !== $property->getAttributes(ORM\ManyToOne::class) || [] !== $property->getAttributes(ORM\OneToOne::class)) {
                 return $this->inflector->toSnakeCase($property->getName()) . '_id';
             }
         }
@@ -94,7 +109,7 @@ class EntityDescriber
 
         // 如果是ORM字段，尝试读取注释
         $attributes = $property->getAttributes(ORM\Column::class);
-        if (!empty($attributes)) {
+        if ([] !== $attributes) {
             $attribute = $attributes[0]->newInstance();
             /** @var ORM\Column $attribute */
             $length = $attribute->length;

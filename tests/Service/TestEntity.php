@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * 测试实体类
+ *
  * @internal
  */
 class TestEntity

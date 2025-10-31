@@ -9,7 +9,7 @@ class FormFieldService
 {
     public function append(FieldInterface $field, FormField $formField): void
     {
-        if ($formField->title !== '') {
+        if ('' !== $formField->title) {
             if (method_exists($field, 'setLabel')) {
                 $field->setLabel($formField->title);
             }

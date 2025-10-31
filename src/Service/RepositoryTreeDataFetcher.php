@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tourze\EasyAdminExtraBundle\Service;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Tourze\EasyAdminExtraBundle\Exception\BusinessRuleException;
 use Tourze\EnumExtra\TreeDataFetcher;
 
 class RepositoryTreeDataFetcher implements TreeDataFetcher
@@ -28,11 +31,24 @@ class RepositoryTreeDataFetcher implements TreeDataFetcher
         $this->entityClass = $entityClass;
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function genTreeData(): array
     {
-        $_repo = $this->registry
-            ->getManagerForClass($this->getEntityClass())
-            ->getRepository($this->getEntityClass());
+        $entityClass = $this->getEntityClass();
+        if (null === $entityClass) {
+            throw new BusinessRuleException('Entity class is not set');
+        }
+
+        /** @var class-string<object> $entityClass */
+        $manager = $this->registry->getManagerForClass($entityClass);
+        if (null === $manager) {
+            throw new BusinessRuleException('Manager not found for entity class: ' . $entityClass);
+        }
+
+        /** @var class-string<object> $entityClass */
+        $_repo = $manager->getRepository($entityClass);
 
         $tree = [];
         // 先查找第一层
@@ -44,62 +60,107 @@ class RepositoryTreeDataFetcher implements TreeDataFetcher
             ]);
         }
 
-        return $this->appendKeyValue($tree);
+        /** @var array<int, array<string, mixed>> $normalizedTree */
+        $normalizedTree = $tree;
+
+        return $this->appendKeyValue($normalizedTree);
     }
 
-    public function checkIfChildrenEmpty($item): bool
+    /**
+     * @param array<string, mixed> $item
+     */
+    public function checkIfChildrenEmpty(array $item): bool
     {
         if (!isset($item['children'])) {
             return true;
         }
 
-        if (empty($item['children'])) {
+        if (!is_array($item['children']) || [] === $item['children']) {
             return true;
         }
 
         return false;
     }
 
-    public function checkTree(array $tree, $level): array
+    /**
+     * @param array<int, array<string, mixed>> $tree
+     * @return array<int, array<string, mixed>>
+     */
+    public function checkTree(array $tree, int $level): array
     {
-        foreach ($tree as $k => &$item) {
+        $processedTree = [];
+
+        foreach ($tree as $k => $item) {
             if ($this->checkIfChildrenEmpty($item) && 1 !== $level) {
-                unset($tree[$k]);
                 continue;
             }
 
             if (isset($item['children'])) {
                 $item['children'] = $this->checkTree($item['children'], $level + 1);
             }
+
+            $processedTree[] = $item;
         }
 
-        unset($item);
-
-        return array_values($tree);
+        return $processedTree;
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $tree
+     * @return array<int, array<string, mixed>>
+     */
     public function appendKeyValue(array $tree): array
     {
-        $map = [
+        $keyValueMap = $this->getKeyValueMap();
+        $processedTree = [];
+
+        foreach ($tree as $item) {
+            $processedItem = $this->mapItemKeys($item, $keyValueMap);
+            $processedItem = $this->processChildrenRecursively($processedItem);
+            $processedTree[] = $processedItem;
+        }
+
+        return $processedTree;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function getKeyValueMap(): array
+    {
+        return [
             'key' => 'id',
             'value' => 'id',
             'title' => 'name',
         ];
+    }
 
-        foreach ($tree as $k => &$item) {
-            foreach ($map as $_k => $_v) {
-                if (!isset($item[$_k]) && isset($item[$_v])) {
-                    $item[$_k] = $item[$_v];
-                }
-            }
-
-            if (isset($item['children']) && $item['children']) {
-                $item['children'] = $this->appendKeyValue($item['children']);
+    /**
+     * @param array<string, mixed> $item
+     * @param array<string, string> $keyValueMap
+     * @return array<string, mixed>
+     */
+    private function mapItemKeys(array $item, array $keyValueMap): array
+    {
+        foreach ($keyValueMap as $targetKey => $sourceKey) {
+            if (!isset($item[$targetKey]) && isset($item[$sourceKey])) {
+                $item[$targetKey] = $item[$sourceKey];
             }
         }
 
-        unset($item);
+        return $item;
+    }
 
-        return array_values($tree);
+    /**
+     * @param array<string, mixed> $item
+     * @return array<string, mixed>
+     */
+    private function processChildrenRecursively(array $item): array
+    {
+        if (isset($item['children']) && is_array($item['children']) && [] !== $item['children']) {
+            $item['children'] = $this->appendKeyValue($item['children']);
+        }
+
+        return $item;
     }
 }

@@ -10,6 +10,7 @@ use Tourze\EnumExtra\SelectTrait;
 
 /**
  * 测试状态枚举
+ *
  * @internal
  */
 enum TestStatusEnum: string implements Itemable, Labelable, Selectable

@@ -2,23 +2,17 @@
 
 namespace Tourze\EasyAdminExtraBundle\Tests\Event;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\EventDispatcher\Event;
 use Tourze\EasyAdminExtraBundle\Event\RecordFormTrait;
 
 /**
- * 测试类，用于测试RecordFormTrait特征
+ * 测试RecordFormTrait特征
+ *
  * @internal
  */
-class TestEvent extends Event
-{
-    use RecordFormTrait;
-}
-
-/**
- * 测试RecordFormTrait特征
- */
-class RecordFormTraitTest extends TestCase
+#[CoversClass(RecordFormTrait::class)]
+final class RecordFormTraitTest extends TestCase
 {
     /**
      * 测试模型属性访问
@@ -57,8 +51,8 @@ class RecordFormTraitTest extends TestCase
             'name' => 'Form Data',
             'options' => [
                 'option1' => true,
-                'option2' => false
-            ]
+                'option2' => false,
+            ],
         ];
 
         // 设置表单数据
@@ -89,8 +83,8 @@ class RecordFormTraitTest extends TestCase
         $this->assertSame($model1, $event->getModel());
 
         // 测试自定义类
-        $model2 = new class() {
-            public $property = 'value';
+        $model2 = new class {
+            public string $property = 'value';
         };
         $event->setModel($model2);
         $this->assertSame($model2, $event->getModel());
@@ -108,16 +102,16 @@ class RecordFormTraitTest extends TestCase
         $complexFormData = [
             'level1' => [
                 'level2' => [
-                    'level3' => 'deep value'
-                ]
+                    'level3' => 'deep value',
+                ],
             ],
             'list' => [1, 2, 3, 4, 5],
             'mixed' => [
                 'string' => 'text',
                 'number' => 42,
                 'boolean' => true,
-                'null' => null
-            ]
+                'null' => null,
+            ],
         ];
 
         // 设置表单数据

@@ -5,16 +5,23 @@ declare(strict_types=1);
 namespace Tourze\EasyAdminExtraBundle\Tests\Service;
 
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Tourze\EasyAdminExtraBundle\Service\FormFieldService;
 use Tourze\EasyAdmin\Attribute\Field\FormField;
+use Tourze\EasyAdminExtraBundle\Service\FormFieldService;
 
-class FormFieldServiceTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(FormFieldService::class)]
+final class FormFieldServiceTest extends TestCase
 {
     private FormFieldService $formFieldService;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->formFieldService = new FormFieldService();
     }
 

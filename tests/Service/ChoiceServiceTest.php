@@ -2,27 +2,33 @@
 
 namespace Tourze\EasyAdminExtraBundle\Tests\Service;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tourze\EasyAdminExtraBundle\Service\ChoiceService;
-use Traversable;
 
-class ChoiceServiceTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(ChoiceService::class)]
+final class ChoiceServiceTest extends TestCase
 {
     private ChoiceService $choiceService;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->choiceService = new ChoiceService();
     }
 
     /**
      * 测试从普通枚举创建选项
      */
-    public function testCreateChoicesFromNormalEnum(): void
+    public function testCreateChoicesFromEnum(): void
     {
         $choices = $this->choiceService->createChoicesFromEnum(TestStatusEnum::class);
 
-        $this->assertInstanceOf(Traversable::class, $choices);
+        $this->assertInstanceOf(\Traversable::class, $choices);
 
         $choicesArray = iterator_to_array($choices);
 
@@ -40,7 +46,7 @@ class ChoiceServiceTest extends TestCase
     {
         $choices = $this->choiceService->createChoicesFromEnum(TestStatusWithLabelEnum::class);
 
-        $this->assertInstanceOf(Traversable::class, $choices);
+        $this->assertInstanceOf(\Traversable::class, $choices);
 
         $choicesArray = iterator_to_array($choices);
 

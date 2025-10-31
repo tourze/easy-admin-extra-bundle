@@ -3,14 +3,14 @@
 namespace Tourze\EasyAdminExtraBundle\Service;
 
 use Tourze\EnumExtra\Labelable;
-use Traversable;
 
 class ChoiceService
 {
     /**
      * @param class-string<\BackedEnum> $enumType
+     * @return \Traversable<string, \BackedEnum|mixed>
      */
-    public function createChoicesFromEnum(string $enumType): Traversable
+    public function createChoicesFromEnum(string $enumType): \Traversable
     {
         foreach ($enumType::cases() as $case) {
             /** @var \BackedEnum $case */

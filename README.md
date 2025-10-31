@@ -3,25 +3,37 @@
 [English](README.md) | [中文](README.zh-CN.md)
 
 [![Latest Version](https://img.shields.io/packagist/v/tourze/easy-admin-extra-bundle.svg?style=flat-square)](https://packagist.org/packages/tourze/easy-admin-extra-bundle)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.1-blue.svg?style=flat-square)](https://packagist.org/packages/tourze/easy-admin-extra-bundle)
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/tourze/php-monorepo/ci.yml?style=flat-square)](https://github.com/tourze/php-monorepo/actions)
+[![Code Coverage](https://img.shields.io/codecov/c/github/tourze/php-monorepo?style=flat-square)](https://codecov.io/gh/tourze/php-monorepo)
+
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-Extension bundle for EasyAdmin, providing utility features for working with Symfony EasyAdmin.
+Extension bundle for EasyAdmin, providing annotation-driven utilities and enhanced features for Symfony EasyAdmin.
 
 ## Features
 
-- **EntityDescriber**: Read entity information, get property labels, column names, and field length.
-- **RepositoryTreeDataFetcher**: Fetch and manipulate tree structure data from a repository.
-- **ChoiceService**: Create options from enum types for form fields.
-- **ColumnService**: Handle column-related functionality, especially for enum type columns.
-- **ImportService**: Process import functionality, identify importable properties.
+- **AbstractCrudController**: Enhanced CRUD controller with automatic field configuration, permission control, and entity copying support
+- **Annotation-Driven Configuration**: Uses PHP 8 attributes for automatic field and filter configuration
+- **Field Services**: Automatic field type detection and configuration based on Doctrine mapping and annotations
+- **Filter System**: Automatic filter creation based on `@Filterable` annotations
+- **Search System**: Smart search field extraction using `@Keyword` annotations
+- **Entity Copying**: Built-in support for entity cloning with configurable copy rules
+- **Event System**: Pre/post operation events for create and modify operations
+- **Tree Data Support**: Fetch and manipulate hierarchical data structures
+- **Import/Export Support**: Identify and process importable entity properties
+- **Multi-language Support**: Internationalization support for labels and messages
 
-## Requirements
+## Installation
+
+### Requirements
 
 - PHP 8.1+
 - Symfony 6.4+
 - Doctrine ORM 2.17 or 3.0+
 
-## Installation
+### Install via Composer
 
 Install the package via Composer:
 
@@ -38,6 +50,49 @@ Tourze\EasyAdminExtraBundle\EasyAdminExtraBundle::class => ['all' => true],
 ```
 
 ## Usage
+
+### AbstractCrudController
+
+The main feature is the enhanced CRUD controller that automatically configures fields and filters based on annotations:
+
+```php
+use Tourze\EasyAdminExtraBundle\Controller\AbstractCrudController;
+
+class UserCrudController extends AbstractCrudController
+{
+    public static function getEntityFqcn(): string
+    {
+        return User::class;
+    }
+}
+```
+
+### Annotation-Driven Entity Configuration
+
+Use PHP 8 attributes to configure your entities:
+
+```php
+use Tourze\EasyAdminAttribute\Attribute\FormField;
+use Tourze\EasyAdminAttribute\Attribute\ListColumn;
+use Tourze\EasyAdminAttribute\Attribute\Filterable;
+use Tourze\EasyAdminAttribute\Attribute\Keyword;
+
+class User
+{
+    #[ListColumn(order: 1)]
+    #[FormField(order: 1)]
+    #[Filterable]
+    #[Keyword]
+    private string $username;
+
+    #[ListColumn(order: 2)]
+    #[FormField(order: 2)]
+    #[Filterable]
+    private string $email;
+
+    // Other properties...
+}
+```
 
 ### EntityDescriber
 
@@ -102,6 +157,57 @@ class MyTreeService
         $this->treeFetcher->setEntityClass($entityClass);
         return $this->treeFetcher->genTreeData();
     }
+}
+```
+
+## Advanced Usage
+
+### Custom Field Creation
+
+You can extend the FieldService to create custom field types or modify existing field behavior:
+
+```php
+use Tourze\EasyAdminExtraBundle\Service\FieldService;
+
+class CustomFieldService extends FieldService
+{
+    public function createCustomField(\ReflectionProperty $property): ?FieldInterface
+    {
+        // Custom field creation logic
+        return null;
+    }
+}
+```
+
+### Tree Data Manipulation
+
+For complex tree data operations, you can extend the RepositoryTreeDataFetcher:
+
+```php
+use Tourze\EasyAdminExtraBundle\Service\RepositoryTreeDataFetcher;
+
+class CustomTreeDataFetcher extends RepositoryTreeDataFetcher
+{
+    public function customTreeProcessing(array $tree): array
+    {
+        // Custom tree processing logic
+        return $tree;
+    }
+}
+```
+
+### Entity Copy Operations
+
+Use the CopyableRepository trait for entity copying functionality:
+
+```php
+use Tourze\EasyAdminExtraBundle\Contract\CopyableRepository;
+
+class MyEntityRepository extends ServiceEntityRepository
+{
+    use CopyableRepository;
+    
+    // Repository implementation
 }
 ```
 

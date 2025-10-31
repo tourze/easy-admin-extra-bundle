@@ -37,17 +37,21 @@ use Tourze\EasyAdminExtraBundle\Service\TextHelper;
 
 /**
  * 继承，做一些通用逻辑处理
+ *
+ * @deprecated 直接改为继承 \EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController
+ * @template TEntity of object
+ * @extends \EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController<TEntity>
  */
 abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController
 {
     public static function getSubscribedServices(): array
     {
         return array_merge(parent::getSubscribedServices(), [
-            LoggerInterface::class => '?'.LoggerInterface::class,
-            AdminUrlGenerator::class => '?'.AdminUrlGenerator::class,
-            TextHelper::class => '?'.TextHelper::class,
-            FilterService::class => '?'.FilterService::class,
-            FieldService::class => '?'.FieldService::class,
+            LoggerInterface::class => '?' . LoggerInterface::class,
+            AdminUrlGenerator::class => '?' . AdminUrlGenerator::class,
+            TextHelper::class => '?' . TextHelper::class,
+            FilterService::class => '?' . FilterService::class,
+            FieldService::class => '?' . FieldService::class,
         ]);
     }
 
@@ -76,6 +80,9 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         return $this->container->get(FieldService::class);
     }
 
+    /**
+     * @return \ReflectionClass<TEntity>
+     */
     public function getEntityReflection(): \ReflectionClass
     {
         return new \ReflectionClass(static::getEntityFqcn());
@@ -89,15 +96,17 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         // 标题
         $title = $this->getTextHelper()->getTitleFromReflection($reflection);
         $crud->setEntityLabelInSingular($title)
-            ->setEntityLabelInPlural($title);
+            ->setEntityLabelInPlural($title)
+        ;
 
         // 权限控制
         $crud->setEntityPermission(static::getEntityFqcn() . '::list');
 
         // 搜索的支持
         $searchFields = $this->extractSearchFields($reflection);
-        $crud->setSearchFields($searchFields !== [] ? $searchFields : null)
-            ->setSearchMode(SearchMode::ANY_TERMS);
+        $crud->setSearchFields([] !== $searchFields ? $searchFields : null)
+            ->setSearchMode(SearchMode::ANY_TERMS)
+        ;
 
         // 默认排序
         $crud->setDefaultSort(['id' => 'DESC']);
@@ -107,16 +116,19 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
 
     /**
      * 从类的反射对象中读取可以用来关键词搜索的内容
+     * @param \ReflectionClass<TEntity> $reflection
+     * @return string[]
      */
     private function extractSearchFields(\ReflectionClass $reflection): array
     {
         $fields = [];
         foreach ($reflection->getProperties() as $property) {
-            if (empty($property->getAttributes(Keyword::class))) {
+            if ([] === $property->getAttributes(Keyword::class)) {
                 continue;
             }
             $fields[] = $property->getName();
         }
+
         return $fields;
     }
 
@@ -150,6 +162,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         $submitButtonName = $context->getRequest()->request->all()['ea']['newForm']['btn'] ?? null;
         if (Action::SAVE_AND_RETURN === $submitButtonName) {
             $url = $this->getAdminUrlGenerator()->setAction(Action::INDEX)->generateUrl();
+
             return $this->redirect($url);
         }
 
@@ -167,7 +180,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
 
         foreach ($properties as $property) {
             $field = $this->getFieldService()->createFieldFromProperty($property, $pageName);
-            if ($field === null) {
+            if (null === $field) {
                 continue;
             }
 
@@ -188,7 +201,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
                 'propertyName' => $property->getName(),
             ];
 
-            $currentOrder++;
+            ++$currentOrder;
         }
 
         // 根据order排序
@@ -214,7 +227,7 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         $formField = $formFieldAttr?->newInstance();
 
         // 根据页面类型返回对应的order，如果没有设置则返回null
-        return match($pageName) {
+        return match ($pageName) {
             Crud::PAGE_INDEX, Crud::PAGE_DETAIL => $listColumn?->order,
             Crud::PAGE_NEW, Crud::PAGE_EDIT => $formField?->order,
             default => null,
@@ -227,8 +240,8 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         $properties = $reflection->getProperties();
 
         foreach ($properties as $property) {
-            $filter = $this->getFilterService()->createFilterFomProperty($property);
-            if ($filter !== null) {
+            $filter = $this->getFilterService()->createFilterFromProperty($property);
+            if (null !== $filter) {
                 $this->getLogger()->debug('创建CURD Filter', [
                     'property' => $property,
                     'filter' => $filter,
@@ -244,63 +257,111 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
     {
         $reflection = $this->getEntityReflection();
 
-        $actions->add(Crud::PAGE_DETAIL, Action::INDEX);
+        $this->addBasicActions($actions);
+        $this->addAttributeBasedActions($actions, $reflection);
+        $this->addPropertyBasedActions($actions, $reflection);
 
-        if (!empty($reflection->getAttributes(BatchDeletable::class))) {
+        return $actions;
+    }
+
+    private function addBasicActions(Actions $actions): void
+    {
+        if (null === $actions->getAsDto(Crud::PAGE_DETAIL)->getAction(Crud::PAGE_DETAIL, Action::INDEX)) {
+            $actions->add(Crud::PAGE_DETAIL, Action::INDEX);
+        }
+    }
+
+    /**
+     * @param \ReflectionClass<object> $reflection
+     */
+    private function addAttributeBasedActions(Actions $actions, \ReflectionClass $reflection): void
+    {
+        $this->addBatchActions($actions, $reflection);
+        $this->addCrudActions($actions, $reflection);
+        $this->addCopyActions($actions, $reflection);
+    }
+
+    /**
+     * @param \ReflectionClass<object> $reflection
+     */
+    private function addBatchActions(Actions $actions, \ReflectionClass $reflection): void
+    {
+        if ([] !== $reflection->getAttributes(BatchDeletable::class)) {
             $actions->addBatchAction(Action::BATCH_DELETE);
         }
+    }
 
-        if (!empty($reflection->getAttributes(Creatable::class))) {
+    /**
+     * @param \ReflectionClass<object> $reflection
+     */
+    private function addCrudActions(Actions $actions, \ReflectionClass $reflection): void
+    {
+        if ([] !== $reflection->getAttributes(Creatable::class)) {
             $actions->add(Crud::PAGE_INDEX, Action::NEW);
             $actions->add(Crud::PAGE_NEW, Action::SAVE_AND_RETURN);
             $actions->add(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER);
         }
 
-        if (!empty($reflection->getAttributes(Editable::class))) {
+        if ([] !== $reflection->getAttributes(Editable::class)) {
             $actions->add(Crud::PAGE_INDEX, Action::EDIT);
             $actions->add(Crud::PAGE_DETAIL, Action::EDIT);
             $actions->add(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN);
             $actions->add(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
         }
 
-        if (!empty($reflection->getAttributes(Deletable::class))) {
+        if ([] !== $reflection->getAttributes(Deletable::class)) {
             $actions->add(Crud::PAGE_INDEX, Action::DELETE);
             $actions->add(Crud::PAGE_DETAIL, Action::DELETE);
         }
+    }
 
-        if (!empty($reflection->getAttributes(Copyable::class))) {
+    /**
+     * @param \ReflectionClass<object> $reflection
+     */
+    private function addCopyActions(Actions $actions, \ReflectionClass $reflection): void
+    {
+        if ([] !== $reflection->getAttributes(Copyable::class)) {
             $copyAction = Action::new('copy', '复制')
-                ->linkToCrudAction('copyAction');
+                ->linkToCrudAction('copyAction')
+            ;
 
             $actions->add(Crud::PAGE_INDEX, $copyAction);
             $actions->add(Crud::PAGE_DETAIL, $copyAction);
         }
+    }
 
+    /**
+     * @param \ReflectionClass<object> $reflection
+     */
+    private function addPropertyBasedActions(Actions $actions, \ReflectionClass $reflection): void
+    {
         foreach ($reflection->getProperties() as $property) {
             foreach ($property->getAttributes(CurdAction::class) as $curdAction) {
-                $curdAction = $curdAction->newInstance();
-                /** @var CurdAction $curdAction */
-                $action = Action::new('CurdAction-' . $property->getName(), $curdAction->label);
-                $action->displayAsLink();
-                $action->linkToUrl(function (object $value) use ($property) {
-                    $oneToMany = $property->getAttributes(ORM\OneToMany::class)[0]->newInstance();
-                    /** @var ORM\OneToMany $oneToMany */
-
-                    $controller = $this->container->get(AdminContextProvider::class)
-                        ->getCrudControllers()
-                        ->findCrudFqcnByEntityFqcn($oneToMany->targetEntity);
-                    return $this->getAdminUrlGenerator()
-                        ->setController($controller)
-                        ->set('entity', [
-                            $oneToMany->mappedBy => $value->getId(),
-                        ])
-                        ->generateUrl();
-                });
-                $actions->add(Crud::PAGE_INDEX, $action);
+                $this->addCurdAction($actions, $property, $curdAction->newInstance());
             }
         }
+    }
 
-        return $actions;
+    private function addCurdAction(Actions $actions, \ReflectionProperty $property, CurdAction $curdAction): void
+    {
+        $action = Action::new('CurdAction-' . $property->getName(), $curdAction->label);
+        $action->displayAsLink();
+        $action->linkToUrl(function (object $value) use ($property) {
+            $oneToMany = $property->getAttributes(ORM\OneToMany::class)[0]->newInstance();
+            $controller = $this->container->get(AdminContextProvider::class)
+                ->getCrudControllers()
+                ->findCrudFqcnByEntityFqcn($oneToMany->targetEntity)
+            ;
+
+            return $this->getAdminUrlGenerator()
+                ->setController($controller)
+                ->set('entity', [
+                    $oneToMany->mappedBy => method_exists($value, 'getId') ? $value->getId() : null,
+                ])
+                ->generateUrl()
+            ;
+        });
+        $actions->add(Crud::PAGE_INDEX, $action);
     }
 
     public function delete(AdminContext $context): Response
@@ -309,75 +370,109 @@ abstract class AbstractCrudController extends \EasyCorp\Bundle\EasyAdminBundle\C
         if ($response instanceof RedirectResponse) {
             $this->addFlash('success', '删除成功');
         }
-        return $response;
+
+        // 确保返回类型为Response
+        return $response instanceof Response ? $response : new Response();
     }
 
     #[AdminAction(routePath: '{entityId}/copy', routeName: 'copy')]
     public function copyAction(AdminContext $context, EntityManagerInterface $entityManager): Response
     {
         $entityInstance = $context->getEntity()->getInstance();
-        $entityFqcn = get_class($entityInstance);
-        $reflection = new \ReflectionClass($entityFqcn);
+        if (null === $entityInstance) {
+            return $this->createErrorResponse('无法获取实体实例');
+        }
+        $reflection = new \ReflectionClass($entityInstance);
 
-        // 检查实体是否有 @Copyable 注解
-        $copyableAttr = $reflection->getAttributes(Copyable::class)[0] ?? null;
-        if ($copyableAttr === null) {
-            $this->addFlash('danger', '该实体不支持复制功能');
-            return $this->redirect($this->getAdminUrlGenerator()
-                ->setController(static::class)
-                ->setAction(Action::INDEX)
-                ->generateUrl());
+        if (!$this->isEntityCopyable($reflection)) {
+            return $this->createErrorResponse('该实体不支持复制功能');
         }
 
-        // 创建新实体实例
+        $newEntityInstance = $this->createCopiedEntity($entityInstance, $reflection);
+
+        return $this->persistCopiedEntity($newEntityInstance, $entityManager);
+    }
+
+    /**
+     * @param \ReflectionClass<object> $reflection
+     */
+    private function isEntityCopyable(\ReflectionClass $reflection): bool
+    {
+        return [] !== $reflection->getAttributes(Copyable::class);
+    }
+
+    private function createErrorResponse(string $message): Response
+    {
+        $this->addFlash('danger', $message);
+
+        return $this->redirect($this->getAdminUrlGenerator()
+            ->setController(get_class($this))
+            ->setAction(Action::INDEX)
+            ->generateUrl());
+    }
+
+    /**
+     * @param \ReflectionClass<object> $reflection
+     */
+    private function createCopiedEntity(object $originalEntity, \ReflectionClass $reflection): object
+    {
+        $entityFqcn = get_class($originalEntity);
         $newEntityInstance = new $entityFqcn();
 
-        // 遍历所有属性，查找带有 @CopyColumn 注解的属性
         foreach ($reflection->getProperties() as $property) {
-            $copyColumnAttr = $property->getAttributes(CopyColumn::class)[0] ?? null;
-            if ($copyColumnAttr === null) {
-                continue;
-            }
-
-            $copyColumn = $copyColumnAttr->newInstance();
-            /** @var CopyColumn $copyColumn */
-
-            // 如果设置了固定值，则使用固定值
-            if ($copyColumn->fixedValue !== null) {
-                $property->setValue($newEntityInstance, $copyColumn->fixedValue);
-                continue;
-            }
-
-            // 获取原始值
-            $originalValue = $property->getValue($entityInstance);
-
-            // 处理后缀
-            if ($copyColumn->suffix !== false && is_string($originalValue)) {
-                // 如果suffix是true，使用默认后缀 " - 副本"
-                $suffix = $copyColumn->suffix === true ? ' - 副本' : $copyColumn->suffix;
-                $property->setValue($newEntityInstance, $originalValue . $suffix);
-            } else {
-                // 直接复制原始值
-                $property->setValue($newEntityInstance, $originalValue);
-            }
+            $this->copyPropertyIfCopyable($property, $originalEntity, $newEntityInstance);
         }
 
+        return $newEntityInstance;
+    }
+
+    private function copyPropertyIfCopyable(\ReflectionProperty $property, object $originalEntity, object $newEntity): void
+    {
+        $copyColumnAttr = $property->getAttributes(CopyColumn::class)[0] ?? null;
+        if (null === $copyColumnAttr) {
+            return;
+        }
+
+        $copyColumn = $copyColumnAttr->newInstance();
+
+        if (null !== $copyColumn->fixedValue) {
+            $property->setValue($newEntity, $copyColumn->fixedValue);
+
+            return;
+        }
+
+        $originalValue = $property->getValue($originalEntity);
+        $copiedValue = $this->processCopyValue($originalValue, $copyColumn);
+        $property->setValue($newEntity, $copiedValue);
+    }
+
+    private function processCopyValue(mixed $originalValue, CopyColumn $copyColumn): mixed
+    {
+        if (false === $copyColumn->suffix || !is_string($originalValue)) {
+            return $originalValue;
+        }
+
+        $suffix = true === $copyColumn->suffix ? ' - 副本' : $copyColumn->suffix;
+
+        return $originalValue . $suffix;
+    }
+
+    private function persistCopiedEntity(object $newEntityInstance, EntityManagerInterface $entityManager): Response
+    {
         try {
-            // 保存新实体
             $entityManager->persist($newEntityInstance);
             $entityManager->flush();
-
             $this->addFlash('success', '复制成功');
         } catch (\Throwable $exception) {
             $this->getLogger()->error('复制实体时发生错误', [
-                'entityInstance' => $entityInstance,
+                'entityInstance' => $newEntityInstance,
                 'exception' => $exception,
             ]);
             $this->addFlash('danger', $exception->getMessage());
         }
 
         return $this->redirect($this->getAdminUrlGenerator()
-            ->setController(static::class)
+            ->setController(get_class($this))
             ->setAction(Action::INDEX)
             ->generateUrl());
     }

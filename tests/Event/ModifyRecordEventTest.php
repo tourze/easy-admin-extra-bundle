@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Tourze\EasyAdminExtraBundle\Tests\Event;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\EasyAdminExtraBundle\Event\ModifyRecordEvent;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractEventTestCase;
 
-class ModifyRecordEventTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(ModifyRecordEvent::class)]
+final class ModifyRecordEventTest extends AbstractEventTestCase
 {
     public function testModelGetterAndSetter(): void
     {
@@ -35,7 +40,7 @@ class ModifyRecordEventTest extends TestCase
     {
         $model = new \stdClass();
         $model->id = 1;
-        
+
         $form = ['name' => 'Updated Name'];
 
         $event = new ModifyRecordEvent();

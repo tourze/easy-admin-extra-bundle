@@ -8,19 +8,20 @@ use Doctrine\ORM\Mapping\Id;
 class ImportService
 {
     /**
+     * @param \ReflectionClass<object> $reflectionClass
      * @return iterable<\ReflectionProperty>
      */
     public function getPossibleProperties(\ReflectionClass $reflectionClass): iterable
     {
         foreach ($reflectionClass->getProperties() as $property) {
             // 主键
-            if (!empty($property->getAttributes(Id::class))) {
+            if ([] !== $property->getAttributes(Id::class)) {
                 yield $property;
                 continue;
             }
 
             $column = $property->getAttributes(Column::class);
-            if (empty($column)) {
+            if ([] === $column) {
                 continue;
             }
             $column = $column[0]->newInstance();

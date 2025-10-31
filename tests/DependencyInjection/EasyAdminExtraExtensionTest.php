@@ -2,38 +2,25 @@
 
 namespace Tourze\EasyAdminExtraBundle\Tests\DependencyInjection;
 
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Tourze\EasyAdminExtraBundle\DependencyInjection\EasyAdminExtraExtension;
-use Tourze\EasyAdminExtraBundle\Service\ChoiceService;
-use Tourze\EasyAdminExtraBundle\Service\ColumnService;
-use Tourze\EasyAdminExtraBundle\Service\EntityDescriber;
-use Tourze\EasyAdminExtraBundle\Service\ImportService;
-use Tourze\EasyAdminExtraBundle\Service\RepositoryTreeDataFetcher;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractDependencyInjectionExtensionTestCase;
 
-class EasyAdminExtraExtensionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(EasyAdminExtraExtension::class)]
+final class EasyAdminExtraExtensionTest extends AbstractDependencyInjectionExtensionTestCase
 {
-    private ContainerBuilder $container;
-    private EasyAdminExtraExtension $extension;
-
-    protected function setUp(): void
-    {
-        $this->container = new ContainerBuilder();
-        $this->extension = new EasyAdminExtraExtension();
-    }
-
     /**
-     * 测试加载扩展
+     * 重写排除抽象类的服务目录提供器
      */
-    public function testLoad(): void
+    protected function provideServiceDirectories(): iterable
     {
-        $this->extension->load([], $this->container);
-
-        // 验证服务是否已注册
-        $this->assertTrue($this->container->hasDefinition(ChoiceService::class));
-        $this->assertTrue($this->container->hasDefinition(ColumnService::class));
-        $this->assertTrue($this->container->hasDefinition(EntityDescriber::class));
-        $this->assertTrue($this->container->hasDefinition(ImportService::class));
-        $this->assertTrue($this->container->hasDefinition(RepositoryTreeDataFetcher::class));
+        yield 'Service';
+        yield 'Repository';
+        yield 'EventSubscriber';
+        yield 'MessageHandler';
+        yield 'Procedure';
     }
 }

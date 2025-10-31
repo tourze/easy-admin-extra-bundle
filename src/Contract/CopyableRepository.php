@@ -1,6 +1,6 @@
 <?php
 
-namespace Tourze\EasyAdminExtraBundle\Repository;
+namespace Tourze\EasyAdminExtraBundle\Contract;
 
 interface CopyableRepository
 {
