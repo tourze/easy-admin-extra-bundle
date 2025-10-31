@@ -23,7 +23,7 @@
     "symfony/yaml": "^7.3",
     "tourze/bundle-dependency": "1.*",
     "tourze/easy-admin-attribute": "0.1.*",
-    "tourze/enum-extra": "0.1.*",
+    "tourze/enum-extra": "1.*",
     "tourze/symfony-dependency-service-loader": "1.*",
     "tourze/symfony-ecol-bundle": "0.1.*",
     "yiisoft/strings": "^2.1"
